@@ -35,21 +35,21 @@ Usage:
 For complete usage guide, see <https://github.com/Ajatt-Tools/mpvacious/blob/master/README.md>
 ]]
 
-local mp = require('mp')
-local OSD = require('osd_styler')
-local cfg_mgr = require('cfg_mgr')
-local encoder = require('encoder.encoder')
-local h = require('helpers')
-local Menu = require('menu')
-local ankiconnect = require('ankiconnect')
-local switch = require('utils.switch')
-local dec_counter = require('utils.dec_counter')
-local play_control = require('utils.play_control')
-local secondary_sid = require('subtitles.secondary_sid')
-local platform = require('platform.init')
-local forvo = require('utils.forvo')
-local subs_observer = require('subtitles.observer')
-local codec_support = require('encoder.codec_support')
+local Menu = require("menu")
+local OSD = require("osd_styler")
+local ankiconnect = require("ankiconnect")
+local cfg_mgr = require("cfg_mgr")
+local codec_support = require("encoder.codec_support")
+local dec_counter = require("utils.dec_counter")
+local encoder = require("encoder.encoder")
+local forvo = require("utils.forvo")
+local h = require("helpers")
+local mp = require("mp")
+local platform = require("platform.init")
+local play_control = require("utils.play_control")
+local secondary_sid = require("subtitles.secondary_sid")
+local subs_observer = require("subtitles.observer")
+local switch = require("utils.switch")
 
 local menu, quick_menu, quick_menu_card
 local quick_creation_opts = {
@@ -76,7 +76,7 @@ local quick_creation_opts = {
     clear_options = function(self)
         self._n_lines = nil
         self._n_cards = 1
-    end
+    end,
 }
 ------------------------------------------------------------
 -- default config
@@ -98,9 +98,9 @@ local config = {
 
     -- Secondary subtitle
     secondary_sub_auto_load = true, -- Automatically load secondary subtitle track when a video file is opened.
-    secondary_sub_lang = 'eng,en,rus,ru,jp,jpn,ja', -- Language of secondary subs that should be automatically loaded.
+    secondary_sub_lang = "eng,en,rus,ru,jp,jpn,ja", -- Language of secondary subs that should be automatically loaded.
     secondary_sub_area = 0.15, -- Hover area. Fraction of the window from the top.
-    secondary_sub_visibility = 'auto', -- One of: 'auto', 'never', 'always'. Controls secondary_sid visibility. Ctrl+V to cycle.
+    secondary_sub_visibility = "auto", -- One of: 'auto', 'never', 'always'. Controls secondary_sid visibility. Ctrl+V to cycle.
 
     -- Snapshots
     snapshot_format = "avif", -- avif, webp or jpg
@@ -142,8 +142,8 @@ local config = {
     -- Better to remove loudnorm from custom args and enable two-pass loudnorm.
     -- Enabling loudnorm both through the separate switch and through custom args
     -- can lead to unpredictable results.
-    ffmpeg_audio_args = '-af loudnorm=I=-16:TP=-1.5:LRA=11:dual_mono=true',
-    mpv_audio_args = '--af-append=loudnorm=I=-16:TP=-1.5:LRA=11:dual_mono=true',
+    ffmpeg_audio_args = "-af loudnorm=I=-16:TP=-1.5:LRA=11:dual_mono=true",
+    mpv_audio_args = "--af-append=loudnorm=I=-16:TP=-1.5:LRA=11:dual_mono=true",
 
     -- Anki
     create_deck = false, -- automatically create a deck for new cards
@@ -153,12 +153,12 @@ local config = {
     sentence_field = "SentKanji",
     secondary_field = "SentEng",
     audio_field = "SentAudio",
-    audio_template = '[sound:%s]',
+    audio_template = "[sound:%s]",
     image_field = "Image",
     image_template = '<img alt="snapshot" src="%s">',
     append_media = true, -- True to append video media after existing data, false to insert media before
     disable_gui_browse = false, -- Lets you disable anki browser manipulation by mpvacious.
-    ankiconnect_url = '127.0.0.1:8765',
+    ankiconnect_url = "127.0.0.1:8765",
 
     -- Note tagging
     -- The tag(s) added to new notes. Spaces separate multiple tags.
@@ -204,7 +204,7 @@ end
 
 local function escape_for_osd(str)
     str = h.trim(str)
-    str = str:gsub('[%[%]{}]', '')
+    str = str:gsub("[%[%]{}]", "")
     return str
 end
 
@@ -251,7 +251,7 @@ local function tag_format(filename)
     filename = filename:gsub(" ", "_")
     filename = filename:gsub("_%-_", "_") -- Replaces garbage _-_ substrings with a underscore
     filename = h.remove_leading_trailing_dashes(filename)
-    return filename, episode_num or ''
+    return filename, episode_num or ""
 end
 
 local substitute_fmt = (function()
@@ -264,12 +264,12 @@ local substitute_fmt = (function()
     end
 
     local function substitute_time_pos(tag)
-        local time_pos = h.human_readable_time(mp.get_property_number('time-pos'))
+        local time_pos = h.human_readable_time(mp.get_property_number("time-pos"))
         return tag:gsub("%%t", time_pos)
     end
 
     local function substitute_envvar(tag)
-        local env_tags = os.getenv('SUBS2SRS_TAGS') or ''
+        local env_tags = os.getenv("SUBS2SRS_TAGS") or ""
         return tag:gsub("%%e", env_tags)
     end
 
@@ -297,7 +297,12 @@ end
 local function construct_note_fields(sub_text, secondary_text, snapshot_filename, audio_filename)
     local ret = {
         [config.sentence_field] = subs_observer.maybe_remove_all_spaces(prepare_for_exporting(sub_text)),
+        ["IsSentenceCard"] = "x",
     }
+    -- Add Sentence field if there's content in the sentence_field
+    if not h.is_empty(ret[config.sentence_field]) then
+        ret["Sentence"] = ret[config.sentence_field]
+    end
     if not h.is_empty(config.secondary_field) then
         ret[config.secondary_field] = prepare_for_exporting(secondary_text)
     end
@@ -332,7 +337,13 @@ local function join_field_content(new_text, old_text, separator)
 end
 
 local function join_fields(new_data, stored_data)
-    for _, field in pairs { config.audio_field, config.image_field, config.miscinfo_field, config.sentence_field, config.secondary_field } do
+    for _, field in pairs({
+        config.audio_field,
+        config.image_field,
+        config.miscinfo_field,
+        config.sentence_field,
+        config.secondary_field,
+    }) do
         if not h.is_empty(field) then
             new_data[field] = join_field_content(h.table_get(new_data, field, ""), h.table_get(stored_data, field, ""))
         end
@@ -354,18 +365,19 @@ local function update_sentence(new_data, stored_data)
         return new_data
     end
 
-    local _, opentag, target, closetag, _ = stored_data[config.sentence_field]:match('^(.-)(<[^>]+>)(.-)(</[^>]+>)(.-)$')
+    local _, opentag, target, closetag, _ =
+        stored_data[config.sentence_field]:match("^(.-)(<[^>]+>)(.-)(</[^>]+>)(.-)$")
     if target then
-        local prefix, _, suffix = new_data[config.sentence_field]:match(table.concat { '^(.-)(', target, ')(.-)$' })
+        local prefix, _, suffix = new_data[config.sentence_field]:match(table.concat({ "^(.-)(", target, ")(.-)$" }))
         if prefix and suffix then
-            new_data[config.sentence_field] = table.concat { prefix, opentag, target, closetag, suffix }
+            new_data[config.sentence_field] = table.concat({ prefix, opentag, target, closetag, suffix })
         end
     end
     return new_data
 end
 
 local function audio_padding()
-    local video_duration = mp.get_property_number('duration')
+    local video_duration = mp.get_property_number("duration")
     if config.audio_padding == 0.0 or not video_duration then
         return 0.0
     end
@@ -396,8 +408,8 @@ local function export_to_anki(gui)
         return h.notify("Nothing to export.", "warn", 1)
     end
 
-    if not gui and h.is_empty(sub['text']) then
-        sub['text'] = string.format("mpvacious wasn't able to grab subtitles (%s)", os.time())
+    if not gui and h.is_empty(sub["text"]) then
+        sub["text"] = string.format("mpvacious wasn't able to grab subtitles (%s)", os.time())
     end
 
     encoder.set_output_dir(get_anki_media_dir_path())
@@ -408,7 +420,7 @@ local function export_to_anki(gui)
     audio.run_async()
 
     local first_field = ankiconnect.get_first_field(config.model_name)
-    local note_fields = construct_note_fields(sub['text'], sub['secondary'], snapshot.filename, audio.filename)
+    local note_fields = construct_note_fields(sub["text"], sub["secondary"], snapshot.filename, audio.filename)
 
     if not h.is_empty(first_field) and h.is_empty(note_fields[first_field]) then
         note_fields[first_field] = "[empty]"
@@ -479,12 +491,12 @@ local function update_notes(note_ids, overwrite)
         return h.notify("Nothing to export. Have you set the timings?", "warn", 2)
     end
 
-    if h.is_empty(sub['text']) then
+    if h.is_empty(sub["text"]) then
         -- In this case, don't modify whatever existing text there is and just
         -- modify the other fields we can. The user might be trying to add
         -- audio to a card which they've manually transcribed (either the video
         -- has no subtitles or it has image subtitles).
-        sub['text'] = nil
+        sub["text"] = nil
     end
 
     local anki_media_dir = get_anki_media_dir_path()
@@ -493,8 +505,9 @@ local function update_notes(note_ids, overwrite)
 
     local snapshot = encoder.snapshot.create_job(sub)
     local audio = encoder.audio.create_job(sub, audio_padding())
-    local new_data = construct_note_fields(sub['text'], sub['secondary'], snapshot.filename, audio.filename)
-    local create_files_countdown = dec_counter.new(2).on_finish(h.as_callback(change_fields, note_ids, new_data, overwrite))
+    local new_data = construct_note_fields(sub["text"], sub["secondary"], snapshot.filename, audio.filename)
+    local create_files_countdown =
+        dec_counter.new(2).on_finish(h.as_callback(change_fields, note_ids, new_data, overwrite))
 
     snapshot.on_finish(create_files_countdown.decrease).run_async()
     audio.on_finish(create_files_countdown.decrease).run_async()
@@ -529,7 +542,14 @@ local function update_selected_note(overwrite)
     end
 
     if #selected_note_ids > config.card_overwrite_safeguard then
-        return h.notify(string.format("More than %i notes selected\nnot recommended, but you can change the limit in your config", config.card_overwrite_safeguard), "warn", 4)
+        return h.notify(
+            string.format(
+                "More than %i notes selected\nnot recommended, but you can change the limit in your config",
+                config.card_overwrite_safeguard
+            ),
+            "warn",
+            4
+        )
     end
 
     update_notes(selected_note_ids, overwrite)
@@ -538,86 +558,102 @@ end
 ------------------------------------------------------------
 -- main menu
 
-menu = Menu:new {
-    hints_state = switch.new { 'basic', 'menu', 'global', 'hidden', },
-}
+menu = Menu:new({
+    hints_state = switch.new({ "basic", "menu", "global", "hidden" }),
+})
 
 menu.keybindings = {
-    { key = 'S', fn = menu:with_update { subs_observer.set_manual_timing_to_sub, 'start' } },
-    { key = 'E', fn = menu:with_update { subs_observer.set_manual_timing_to_sub, 'end' } },
-    { key = 's', fn = menu:with_update { subs_observer.set_manual_timing, 'start' } },
-    { key = 'e', fn = menu:with_update { subs_observer.set_manual_timing, 'end' } },
-    { key = 'c', fn = menu:with_update { subs_observer.set_to_current_sub } },
-    { key = 'r', fn = menu:with_update { subs_observer.clear_and_notify } },
-    { key = 'g', fn = menu:with_update { export_to_anki, true } },
-    { key = 'n', fn = menu:with_update { export_to_anki, false } },
-    { key = 'b', fn = menu:with_update { update_selected_note, false } },
-    { key = 'B', fn = menu:with_update { update_selected_note, true } },
-    { key = 'm', fn = menu:with_update { update_last_note, false } },
-    { key = 'M', fn = menu:with_update { update_last_note, true } },
-    { key = 'f', fn = menu:with_update { function()
-        quick_creation_opts:increment_cards()
-    end } },
-    { key = 'F', fn = menu:with_update { function()
-        quick_creation_opts:decrement_cards()
-    end } },
-    { key = 't', fn = menu:with_update { subs_observer.toggle_autocopy } },
-    { key = 'T', fn = menu:with_update { subs_observer.next_autoclip_method } },
-    { key = 'i', fn = menu:with_update { menu.hints_state.bump } },
-    { key = 'p', fn = menu:with_update { load_next_profile } },
-    { key = 'ESC', fn = function()
-        menu:close()
-    end },
-    { key = 'q', fn = function()
-        menu:close()
-    end },
+    { key = "S", fn = menu:with_update({ subs_observer.set_manual_timing_to_sub, "start" }) },
+    { key = "E", fn = menu:with_update({ subs_observer.set_manual_timing_to_sub, "end" }) },
+    { key = "s", fn = menu:with_update({ subs_observer.set_manual_timing, "start" }) },
+    { key = "e", fn = menu:with_update({ subs_observer.set_manual_timing, "end" }) },
+    { key = "c", fn = menu:with_update({ subs_observer.set_to_current_sub }) },
+    { key = "r", fn = menu:with_update({ subs_observer.clear_and_notify }) },
+    { key = "g", fn = menu:with_update({ export_to_anki, true }) },
+    { key = "n", fn = menu:with_update({ export_to_anki, false }) },
+    { key = "b", fn = menu:with_update({ update_selected_note, false }) },
+    { key = "B", fn = menu:with_update({ update_selected_note, true }) },
+    { key = "m", fn = menu:with_update({ update_last_note, false }) },
+    { key = "M", fn = menu:with_update({ update_last_note, true }) },
+    {
+        key = "f",
+        fn = menu:with_update({
+            function()
+                quick_creation_opts:increment_cards()
+            end,
+        }),
+    },
+    {
+        key = "F",
+        fn = menu:with_update({
+            function()
+                quick_creation_opts:decrement_cards()
+            end,
+        }),
+    },
+    { key = "t", fn = menu:with_update({ subs_observer.toggle_autocopy }) },
+    { key = "T", fn = menu:with_update({ subs_observer.next_autoclip_method }) },
+    { key = "i", fn = menu:with_update({ menu.hints_state.bump }) },
+    { key = "p", fn = menu:with_update({ load_next_profile }) },
+    {
+        key = "ESC",
+        fn = function()
+            menu:close()
+        end,
+    },
+    {
+        key = "q",
+        fn = function()
+            menu:close()
+        end,
+    },
 }
 
 function menu:print_header(osd)
-    if self.hints_state.get() == 'hidden' then
+    if self.hints_state.get() == "hidden" then
         return
     end
-    osd:submenu('mpvacious options'):newline()
-    osd:item('Timings: '):text(h.human_readable_time(subs_observer.get_timing('start')))
-    osd:item(' to '):text(h.human_readable_time(subs_observer.get_timing('end'))):newline()
-    osd:item('Clipboard autocopy: '):text(subs_observer.autocopy_status_str()):newline()
-    osd:item('Active profile: '):text(profiles.active):newline()
-    osd:item('Deck: '):text(config.deck_name):newline()
-    osd:item('# cards: '):text(quick_creation_opts:get_cards()):newline()
+    osd:submenu("mpvacious options"):newline()
+    osd:item("Timings: "):text(h.human_readable_time(subs_observer.get_timing("start")))
+    osd:item(" to "):text(h.human_readable_time(subs_observer.get_timing("end"))):newline()
+    osd:item("Clipboard autocopy: "):text(subs_observer.autocopy_status_str()):newline()
+    osd:item("Active profile: "):text(profiles.active):newline()
+    osd:item("Deck: "):text(config.deck_name):newline()
+    osd:item("# cards: "):text(quick_creation_opts:get_cards()):newline()
 end
 
 function menu:print_bindings(osd)
-    if self.hints_state.get() == 'global' then
-        osd:submenu('Global bindings'):newline()
-        osd:tab():item('ctrl+c: '):text('Copy current subtitle to clipboard'):newline()
-        osd:tab():item('ctrl+h: '):text('Seek to the start of the line'):newline()
-        osd:tab():item('ctrl+g: '):text('Toggle animated snapshots'):newline()
-        osd:tab():item('ctrl+shift+h: '):text('Replay current subtitle'):newline()
-        osd:tab():item('shift+h/l: '):text('Seek to the previous/next subtitle'):newline()
-        osd:tab():item('alt+h/l: '):text('Seek to the previous/next subtitle and pause'):newline()
-        osd:italics("Press "):item('i'):italics(" to hide mpvacious options."):newline()
-    elseif self.hints_state.get() == 'menu' then
-        osd:submenu('Menu bindings'):newline()
-        osd:tab():item('c: '):text('Set timings to the current sub'):newline()
-        osd:tab():item('s: '):text('Set start time to current position'):newline()
-        osd:tab():item('e: '):text('Set end time to current position'):newline()
-        osd:tab():item('shift+s: '):text('Set start time to current subtitle'):newline()
-        osd:tab():item('shift+e: '):text('Set end time to current subtitle'):newline()
-        osd:tab():item('f: '):text('Increment # cards to update '):italics('(+shift to decrement)'):newline()
-        osd:tab():item('r: '):text('Reset timings'):newline()
-        osd:tab():item('n: '):text('Export note'):newline()
-        osd:tab():item('g: '):text('GUI export'):newline()
-        osd:tab():item('b: '):text('Update the selected note'):italics('(+shift to overwrite)'):newline()
-        osd:tab():item('m: '):text('Update the last added note '):italics('(+shift to overwrite)'):newline()
-        osd:tab():item('t: '):text('Toggle clipboard autocopy'):newline()
-        osd:tab():item('T: '):text('Switch to the next clipboard method'):newline()
-        osd:tab():item('p: '):text('Switch to next profile'):newline()
-        osd:tab():item('ESC: '):text('Close'):newline()
-        osd:italics("Press "):item('i'):italics(" to show global bindings."):newline()
-    elseif self.hints_state.get() == 'hidden' then
+    if self.hints_state.get() == "global" then
+        osd:submenu("Global bindings"):newline()
+        osd:tab():item("ctrl+c: "):text("Copy current subtitle to clipboard"):newline()
+        osd:tab():item("ctrl+h: "):text("Seek to the start of the line"):newline()
+        osd:tab():item("ctrl+g: "):text("Toggle animated snapshots"):newline()
+        osd:tab():item("ctrl+shift+h: "):text("Replay current subtitle"):newline()
+        osd:tab():item("shift+h/l: "):text("Seek to the previous/next subtitle"):newline()
+        osd:tab():item("alt+h/l: "):text("Seek to the previous/next subtitle and pause"):newline()
+        osd:italics("Press "):item("i"):italics(" to hide mpvacious options."):newline()
+    elseif self.hints_state.get() == "menu" then
+        osd:submenu("Menu bindings"):newline()
+        osd:tab():item("c: "):text("Set timings to the current sub"):newline()
+        osd:tab():item("s: "):text("Set start time to current position"):newline()
+        osd:tab():item("e: "):text("Set end time to current position"):newline()
+        osd:tab():item("shift+s: "):text("Set start time to current subtitle"):newline()
+        osd:tab():item("shift+e: "):text("Set end time to current subtitle"):newline()
+        osd:tab():item("f: "):text("Increment # cards to update "):italics("(+shift to decrement)"):newline()
+        osd:tab():item("r: "):text("Reset timings"):newline()
+        osd:tab():item("n: "):text("Export note"):newline()
+        osd:tab():item("g: "):text("GUI export"):newline()
+        osd:tab():item("b: "):text("Update the selected note"):italics("(+shift to overwrite)"):newline()
+        osd:tab():item("m: "):text("Update the last added note "):italics("(+shift to overwrite)"):newline()
+        osd:tab():item("t: "):text("Toggle clipboard autocopy"):newline()
+        osd:tab():item("T: "):text("Switch to the next clipboard method"):newline()
+        osd:tab():item("p: "):text("Switch to next profile"):newline()
+        osd:tab():item("ESC: "):text("Close"):newline()
+        osd:italics("Press "):item("i"):italics(" to show global bindings."):newline()
+    elseif self.hints_state.get() == "hidden" then
         -- Menu bindings are active but hidden
     else
-        osd:italics("Press "):item('i'):italics(" to show menu bindings."):newline()
+        osd:italics("Press "):item("i"):italics(" to show menu bindings."):newline()
     end
 end
 
@@ -627,8 +663,8 @@ function menu:warn_formats(osd)
     end
     for type, codecs in pairs(codec_support) do
         for codec, supported in pairs(codecs) do
-            if not supported and config[type .. '_codec'] == codec then
-                osd:red('warning: '):newline()
+            if not supported and config[type .. "_codec"] == codec then
+                osd:red("warning: "):newline()
                 osd:tab():text(string.format("your version of mpv does not support %s.", codec)):newline()
                 osd:tab():text(string.format("mpvacious won't be able to create %s files.", type)):newline()
             end
@@ -638,7 +674,7 @@ end
 
 function menu:warn_clipboard(osd)
     if subs_observer.autocopy_current_method() == "clipboard" and platform.healthy == false then
-        osd:red('warning: '):text(string.format("%s is not installed.", platform.clip_util)):newline()
+        osd:red("warning: "):text(string.format("%s is not installed.", platform.clip_util)):newline()
     end
 end
 
@@ -655,14 +691,14 @@ function menu:print_selection(osd)
         osd:new_layer():size(config.menu_font_size):font(config.menu_font_name):align(6)
         osd:submenu("Primary text"):newline()
         for _, s in ipairs(subs_observer.recorded_subs()) do
-            osd:text(escape_for_osd(s['text'])):newline()
+            osd:text(escape_for_osd(s["text"])):newline()
         end
         if not h.is_empty(config.secondary_field) then
             -- If the user wants to add secondary subs to Anki,
             -- it's okay to print them on the screen.
             osd:submenu("Secondary text"):newline()
             for _, s in ipairs(subs_observer.recorded_secondary_subs()) do
-                osd:text(escape_for_osd(s['text'])):newline()
+                osd:text(escape_for_osd(s["text"])):newline()
             end
         end
     end
@@ -691,28 +727,42 @@ end
 quick_menu = Menu:new()
 quick_menu.keybindings = {}
 for i = 1, 9 do
-    table.insert(quick_menu.keybindings, { key = tostring(i), fn = function()
-        choose_lines(i)
-    end })
+    table.insert(quick_menu.keybindings, {
+        key = tostring(i),
+        fn = function()
+            choose_lines(i)
+        end,
+    })
 end
-table.insert(quick_menu.keybindings, { key = 'g', fn = function()
-    choose_lines(1)
-end })
-table.insert(quick_menu.keybindings, { key = 'ESC', fn = function()
-    quick_menu:close()
-end })
-table.insert(quick_menu.keybindings, { key = 'q', fn = function()
-    quick_menu:close()
-end })
+table.insert(quick_menu.keybindings, {
+    key = "ctrl+y",
+    fn = function()
+        choose_lines(1)
+    end,
+})
+table.insert(quick_menu.keybindings, {
+    key = "ESC",
+    fn = function()
+        quick_menu:close()
+    end,
+})
+table.insert(quick_menu.keybindings, {
+    key = "q",
+    fn = function()
+        quick_menu:close()
+    end,
+})
 function quick_menu:print_header(osd)
-    osd:submenu('quick card creation: line selection'):newline()
-    osd:item('# lines: '):text('Enter 1-9'):newline()
+    osd:submenu("quick card creation: line selection"):newline()
+    osd:item("# lines: "):text("Enter 1-9"):newline()
 end
+
 function quick_menu:print_legend(osd)
     osd:new_layer():size(config.menu_font_size):font(config.menu_font_name):align(4)
     self:print_header(osd)
     menu:warn_formats(osd)
 end
+
 function quick_menu:make_osd()
     local osd = OSD:new()
     self:print_legend(osd)
@@ -723,25 +773,36 @@ end
 quick_menu_card = Menu:new()
 quick_menu_card.keybindings = {}
 for i = 1, 9 do
-    table.insert(quick_menu_card.keybindings, { key = tostring(i), fn = function()
-        choose_cards(i)
-    end })
+    table.insert(quick_menu_card.keybindings, {
+        key = tostring(i),
+        fn = function()
+            choose_cards(i)
+        end,
+    })
 end
-table.insert(quick_menu_card.keybindings, { key = 'ESC', fn = function()
-    quick_menu_card:close()
-end })
-table.insert(quick_menu_card.keybindings, { key = 'q', fn = function()
-    quick_menu_card:close()
-end })
+table.insert(quick_menu_card.keybindings, {
+    key = "ESC",
+    fn = function()
+        quick_menu_card:close()
+    end,
+})
+table.insert(quick_menu_card.keybindings, {
+    key = "q",
+    fn = function()
+        quick_menu_card:close()
+    end,
+})
 function quick_menu_card:print_header(osd)
-    osd:submenu('quick card creation: card selection'):newline()
-    osd:item('# cards: '):text('Enter 1-9'):newline()
+    osd:submenu("quick card creation: card selection"):newline()
+    osd:item("# cards: "):text("Enter 1-9"):newline()
 end
+
 function quick_menu_card:print_legend(osd)
     osd:new_layer():size(config.menu_font_size):font(config.menu_font_name):align(4)
     self:print_header(osd)
     menu:warn_formats(osd)
 end
+
 function quick_menu_card:make_osd()
     local osd = OSD:new()
     self:print_legend(osd)
@@ -754,7 +815,7 @@ local function run_tests()
         SentKanji = "それは…分からんよ",
         SentAudio = "[sound:s01e13_02m25s010ms_02m27s640ms.ogg]",
         SentEng = "Well...",
-        Image = '<img alt="snapshot" src="s01e13_02m25s561ms.avif">'
+        Image = '<img alt="snapshot" src="s01e13_02m25s561ms.avif">',
     }
     local old_note = {
         SentAudio = "[sound:s01e13_02m21s340ms_02m24s140ms.ogg]",
@@ -805,13 +866,21 @@ local main = (function()
         subs_observer.init(menu, config)
 
         -- Key bindings
-        mp.add_forced_key_binding("Ctrl+c", "mpvacious-copy-sub-to-clipboard", subs_observer.copy_current_primary_to_clipboard)
-        mp.add_key_binding("Ctrl+C", "mpvacious-copy-secondary-sub-to-clipboard", subs_observer.copy_current_secondary_to_clipboard)
+        mp.add_forced_key_binding(
+            "Ctrl+c",
+            "mpvacious-copy-sub-to-clipboard",
+            subs_observer.copy_current_primary_to_clipboard
+        )
+        mp.add_key_binding(
+            "Ctrl+C",
+            "mpvacious-copy-secondary-sub-to-clipboard",
+            subs_observer.copy_current_secondary_to_clipboard
+        )
         mp.add_key_binding("Ctrl+t", "mpvacious-autocopy-toggle", subs_observer.toggle_autocopy)
         mp.add_key_binding("Ctrl+g", "mpvacious-animated-snapshot-toggle", encoder.snapshot.toggle_animation)
 
         -- Secondary subtitles
-        mp.add_key_binding("Ctrl+v", "mpvacious-secondary-sid-toggle", secondary_sid.change_visibility)
+        mp.add_key_binding("Ctrl+V", "mpvacious-secondary-sid-toggle", secondary_sid.change_visibility)
         mp.add_key_binding("Ctrl+k", "mpvacious-secondary-sid-prev", secondary_sid.select_previous)
         mp.add_key_binding("Ctrl+j", "mpvacious-secondary-sid-next", secondary_sid.select_next)
 
@@ -821,15 +890,23 @@ local main = (function()
         end)
 
         -- Add note
-        mp.add_forced_key_binding("Ctrl+n", "mpvacious-export-note", menu:with_update { export_to_anki, false })
+        mp.add_forced_key_binding("Ctrl+n", "mpvacious-export-note", menu:with_update({ export_to_anki, false }))
 
         -- Note updating
-        mp.add_key_binding("Ctrl+b", "mpvacious-update-selected-note", menu:with_update { update_selected_note, false })
-        mp.add_key_binding("Ctrl+B", "mpvacious-overwrite-selected-note", menu:with_update { update_selected_note, true })
-        mp.add_key_binding("Ctrl+m", "mpvacious-update-last-note", menu:with_update { update_last_note, false })
-        mp.add_key_binding("Ctrl+M", "mpvacious-overwrite-last-note", menu:with_update { update_last_note, true })
+        mp.add_key_binding(
+            "Ctrl+b",
+            "mpvacious-update-selected-note",
+            menu:with_update({ update_selected_note, false })
+        )
+        mp.add_key_binding(
+            "Ctrl+B",
+            "mpvacious-overwrite-selected-note",
+            menu:with_update({ update_selected_note, true })
+        )
+        mp.add_key_binding("Ctrl+m", "mpvacious-update-last-note", menu:with_update({ update_last_note, false }))
+        mp.add_key_binding("Ctrl+M", "mpvacious-overwrite-last-note", menu:with_update({ update_last_note, true }))
 
-        mp.add_key_binding("g", "mpvacious-quick-card-menu-open", function()
+        mp.add_key_binding("Ctrl+y", "mpvacious-quick-card-menu-open", function()
             quick_menu:open()
         end)
         mp.add_key_binding("Alt+g", "mpvacious-quick-card-sel-menu-open", function()
@@ -837,15 +914,15 @@ local main = (function()
         end)
 
         -- Vim-like seeking between subtitle lines
-        mp.add_key_binding("H", "mpvacious-sub-seek-back", _ { play_control.sub_seek, 'backward' })
-        mp.add_key_binding("L", "mpvacious-sub-seek-forward", _ { play_control.sub_seek, 'forward' })
+        mp.add_key_binding("H", "mpvacious-sub-seek-back", _({ play_control.sub_seek, "backward" }))
+        mp.add_key_binding("L", "mpvacious-sub-seek-forward", _({ play_control.sub_seek, "forward" }))
 
-        mp.add_key_binding("Alt+h", "mpvacious-sub-seek-back-pause", _ { play_control.sub_seek, 'backward', true })
-        mp.add_key_binding("Alt+l", "mpvacious-sub-seek-forward-pause", _ { play_control.sub_seek, 'forward', true })
+        mp.add_key_binding("Alt+h", "mpvacious-sub-seek-back-pause", _({ play_control.sub_seek, "backward", true }))
+        mp.add_key_binding("Alt+l", "mpvacious-sub-seek-forward-pause", _({ play_control.sub_seek, "forward", true }))
 
-        mp.add_key_binding("Ctrl+h", "mpvacious-sub-rewind", _ { play_control.sub_rewind })
-        mp.add_key_binding("Ctrl+H", "mpvacious-sub-replay", _ { play_control.play_till_sub_end })
-        mp.add_key_binding("Ctrl+L", "mpvacious-sub-play-up-to-next", _ { play_control.play_till_next_sub_end })
+        mp.add_key_binding("Ctrl+h", "mpvacious-sub-rewind", _({ play_control.sub_rewind }))
+        mp.add_key_binding("Ctrl+H", "mpvacious-sub-replay", _({ play_control.play_till_sub_end }))
+        mp.add_key_binding("Ctrl+L", "mpvacious-sub-play-up-to-next", _({ play_control.play_till_next_sub_end }))
 
         mp.msg.warn("Press 'a' to open the mpvacious menu.")
     end
