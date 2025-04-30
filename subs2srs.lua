@@ -301,7 +301,7 @@ local function construct_note_fields(sub_text, secondary_text, snapshot_filename
         ["IsSentenceCard"] = "x",
     }
     -- Add Sentence field if there's content in the sentence_field
-    if not h.is_empty(ret[config.sentence_field]) then
+    if not h.is_empty(ret[config.sentence_field]) and not config.sentence_field == "Sentence" then
         ret["Sentence"] = ret[config.sentence_field]
     end
     if not h.is_empty(config.secondary_field) then
