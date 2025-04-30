@@ -11,6 +11,10 @@ local h = require('helpers')
 local self = {}
 
 self.execute = function(request, completion_fn)
+    if not h.is_empty(self.config.ankiconnect_api_key) then
+        request.key = self.config.ankiconnect_api_key
+    end
+
     -- utils.format_json returns a string
     -- On error, request_json will contain "null", not nil.
     local request_json, error = utils.format_json(request)
@@ -106,6 +110,7 @@ self.add_note = function(note_fields, tag, gui)
         local note_id, error = self.parse_result(result)
         if not error then
             h.notify(string.format("Note added. ID = %s.", note_id))
+            self.gui_browse("nid:" .. note_id) -- show the added note
         else
             h.notify(string.format("Error: %s.", error), "error", 2)
         end
@@ -187,6 +192,7 @@ self.get_first_field = function(model_name)
 end
 
 self.gui_browse = function(query)
+    --- query is a string, e.g. "deck:current", "nid:12345"
     if not self.config.disable_gui_browse then
         self.execute {
             action = 'guiBrowse',
