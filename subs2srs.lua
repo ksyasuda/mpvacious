@@ -109,10 +109,7 @@ end
 local function load_next_profile()
     cfg_mgr.next_profile()
     ensure_deck()
-<<<<<<< HEAD
     h.notify("Loaded profile " .. cfg_mgr.profiles().active)
-=======
-    h.notify("Loaded profile " .. profiles.active)
 end
 
 local function tag_format(filename)
@@ -769,11 +766,8 @@ local main = (function()
         mp.add_key_binding("a", "mpvacious-menu-open", _ { menu.open, menu })
 
         -- Add note
-<<<<<<< HEAD
         mp.add_forced_key_binding("Ctrl+N", "mpvacious-export-note", menu:with_update { note_exporter.export_to_anki, false })
-=======
-        mp.add_forced_key_binding("Ctrl+n", "mpvacious-export-note", menu:with_update({ export_to_anki, false }))
->>>>>>> 2bbb89a (update script)
+        mp.add_key_binding("Ctrl+N", "mpvacious-export-note", menu:with_update({ export_to_anki, false }))
 
         -- Note updating
         mp.add_key_binding("Ctrl+b", "mpvacious-update-selected-note", menu:with_update { note_exporter.update_selected_note, false })
@@ -781,17 +775,8 @@ local main = (function()
         mp.add_key_binding("Ctrl+m", "mpvacious-update-last-note", menu:with_update { note_exporter.update_last_note, false })
         mp.add_key_binding("Ctrl+M", "mpvacious-overwrite-last-note", menu:with_update { note_exporter.update_last_note, true })
 
-<<<<<<< HEAD
         mp.add_key_binding("g", "mpvacious-quick-card-menu-open", _ { quick_menu.open, quick_menu })
-        mp.add_key_binding("Alt+g", "mpvacious-quick-card-sel-menu-open", _ { quick_menu_card.open, quick_menu_card })
-=======
-        mp.add_key_binding("g", "mpvacious-quick-card-menu-open", function()
-            quick_menu:open()
-        end)
-        mp.add_key_binding("Alt+g", "mpvacious-quick-card-sel-menu-open", function()
-            quick_menu_card:open()
-        end)
->>>>>>> 2bbb89a (update script)
+        mp.add_key_binding("Alt+G", "mpvacious-quick-card-sel-menu-open", _ { quick_menu_card.open, quick_menu_card })
 
         -- Vim-like seeking between subtitle lines
         mp.add_key_binding("H", "mpvacious-sub-seek-back", _({ play_control.sub_seek, "backward" }))
