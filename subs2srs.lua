@@ -77,9 +77,8 @@ local quick_creation_opts = {
     clear_options = function(self)
         self._n_lines = nil
         self._n_cards = 1
-    end
+    end,
 }
-
 ------------------------------------------------------------
 -- utility functions
 local new_note_checker = make_new_note_checker.new()
@@ -97,7 +96,7 @@ end
 
 local function escape_for_osd(str)
     str = h.trim(str)
-    str = str:gsub('[%[%]{}]', '')
+    str = str:gsub("[%[%]{}]", "")
     return str
 end
 
@@ -116,9 +115,9 @@ end
 ------------------------------------------------------------
 -- main menu
 
-menu = Menu:new {
-    hints_state = switch.new { 'basic', 'menu', 'global', 'hidden', },
-}
+menu = Menu:new({
+    hints_state = switch.new({ "basic", "menu", "global", "hidden" }),
+})
 
 menu.keybindings = {
     { key = 'S', fn = menu:with_update { subs_observer.set_manual_timing_to_sub, 'start' } },
@@ -144,7 +143,7 @@ menu.keybindings = {
 }
 
 function menu:print_header(osd)
-    if self.hints_state.get() == 'hidden' then
+    if self.hints_state.get() == "hidden" then
         return
     end
     osd:submenu('mpvacious options'):newline()
@@ -157,37 +156,37 @@ function menu:print_header(osd)
 end
 
 function menu:print_bindings(osd)
-    if self.hints_state.get() == 'global' then
-        osd:submenu('Global bindings'):newline()
-        osd:tab():item('ctrl+c: '):text('Copy current subtitle to clipboard'):newline()
-        osd:tab():item('ctrl+h: '):text('Seek to the start of the line'):newline()
-        osd:tab():item('ctrl+g: '):text('Toggle animated snapshots'):newline()
-        osd:tab():item('ctrl+shift+h: '):text('Replay current subtitle'):newline()
-        osd:tab():item('shift+h/l: '):text('Seek to the previous/next subtitle'):newline()
-        osd:tab():item('alt+h/l: '):text('Seek to the previous/next subtitle and pause'):newline()
-        osd:italics("Press "):item('i'):italics(" to hide mpvacious options."):newline()
-    elseif self.hints_state.get() == 'menu' then
-        osd:submenu('Menu bindings'):newline()
-        osd:tab():item('c: '):text('Set timings to the current sub'):newline()
-        osd:tab():item('s: '):text('Set start time to current position'):newline()
-        osd:tab():item('e: '):text('Set end time to current position'):newline()
-        osd:tab():item('shift+s: '):text('Set start time to current subtitle'):newline()
-        osd:tab():item('shift+e: '):text('Set end time to current subtitle'):newline()
-        osd:tab():item('f: '):text('Increment # cards to update '):italics('(+shift to decrement)'):newline()
-        osd:tab():item('r: '):text('Reset timings'):newline()
-        osd:tab():item('n: '):text('Export note'):newline()
-        osd:tab():item('g: '):text('GUI export'):newline()
-        osd:tab():item('b: '):text('Update the selected note'):italics('(+shift to overwrite)'):newline()
-        osd:tab():item('m: '):text('Update the last added note '):italics('(+shift to overwrite)'):newline()
-        osd:tab():item('t: '):text('Toggle clipboard autocopy'):newline()
-        osd:tab():item('T: '):text('Switch to the next clipboard method'):newline()
-        osd:tab():item('p: '):text('Switch to next profile'):newline()
-        osd:tab():item('ESC: '):text('Close'):newline()
-        osd:italics("Press "):item('i'):italics(" to show global bindings."):newline()
-    elseif self.hints_state.get() == 'hidden' then
+    if self.hints_state.get() == "global" then
+        osd:submenu("Global bindings"):newline()
+        osd:tab():item("ctrl+c: "):text("Copy current subtitle to clipboard"):newline()
+        osd:tab():item("ctrl+h: "):text("Seek to the start of the line"):newline()
+        osd:tab():item("ctrl+g: "):text("Toggle animated snapshots"):newline()
+        osd:tab():item("ctrl+shift+h: "):text("Replay current subtitle"):newline()
+        osd:tab():item("shift+h/l: "):text("Seek to the previous/next subtitle"):newline()
+        osd:tab():item("alt+h/l: "):text("Seek to the previous/next subtitle and pause"):newline()
+        osd:italics("Press "):item("i"):italics(" to hide mpvacious options."):newline()
+    elseif self.hints_state.get() == "menu" then
+        osd:submenu("Menu bindings"):newline()
+        osd:tab():item("c: "):text("Set timings to the current sub"):newline()
+        osd:tab():item("s: "):text("Set start time to current position"):newline()
+        osd:tab():item("e: "):text("Set end time to current position"):newline()
+        osd:tab():item("shift+s: "):text("Set start time to current subtitle"):newline()
+        osd:tab():item("shift+e: "):text("Set end time to current subtitle"):newline()
+        osd:tab():item("f: "):text("Increment # cards to update "):italics("(+shift to decrement)"):newline()
+        osd:tab():item("r: "):text("Reset timings"):newline()
+        osd:tab():item("n: "):text("Export note"):newline()
+        osd:tab():item("g: "):text("GUI export"):newline()
+        osd:tab():item("b: "):text("Update the selected note"):italics("(+shift to overwrite)"):newline()
+        osd:tab():item("m: "):text("Update the last added note "):italics("(+shift to overwrite)"):newline()
+        osd:tab():item("t: "):text("Toggle clipboard autocopy"):newline()
+        osd:tab():item("T: "):text("Switch to the next clipboard method"):newline()
+        osd:tab():item("p: "):text("Switch to next profile"):newline()
+        osd:tab():item("ESC: "):text("Close"):newline()
+        osd:italics("Press "):item("i"):italics(" to show global bindings."):newline()
+    elseif self.hints_state.get() == "hidden" then
         -- Menu bindings are active but hidden
     else
-        osd:italics("Press "):item('i'):italics(" to show menu bindings."):newline()
+        osd:italics("Press "):item("i"):italics(" to show menu bindings."):newline()
     end
 end
 
@@ -208,7 +207,7 @@ end
 
 function menu:warn_clipboard(osd)
     if subs_observer.autocopy_current_method() == "clipboard" and platform.healthy == false then
-        osd:red('warning: '):text(string.format("%s is not installed.", platform.clip_util)):newline()
+        osd:red("warning: "):text(string.format("%s is not installed.", platform.clip_util)):newline()
     end
 end
 
@@ -225,14 +224,14 @@ function menu:print_selection(osd)
         osd:new_layer():size(cfg_mgr.config().menu_font_size):font(cfg_mgr.config().menu_font_name):align(6)
         osd:submenu("Primary text"):newline()
         for _, s in ipairs(subs_observer.recorded_subs()) do
-            osd:text(escape_for_osd(s['text'])):newline()
+            osd:text(escape_for_osd(s["text"])):newline()
         end
         if not h.is_empty(cfg_mgr.config().secondary_field) then
             -- If the user wants to add secondary subs to Anki,
             -- it's okay to print them on the screen.
             osd:submenu("Secondary text"):newline()
             for _, s in ipairs(subs_observer.recorded_secondary_subs()) do
-                osd:text(escape_for_osd(s['text'])):newline()
+                osd:text(escape_for_osd(s["text"])):newline()
             end
         end
     end
@@ -262,28 +261,42 @@ end
 quick_menu = Menu:new()
 quick_menu.keybindings = {}
 for i = 1, 9 do
-    table.insert(quick_menu.keybindings, { key = tostring(i), fn = function()
-        choose_lines(i)
-    end })
+    table.insert(quick_menu.keybindings, {
+        key = tostring(i),
+        fn = function()
+            choose_lines(i)
+        end,
+    })
 end
-table.insert(quick_menu.keybindings, { key = 'g', fn = function()
-    choose_lines(1)
-end })
-table.insert(quick_menu.keybindings, { key = 'ESC', fn = function()
-    quick_menu:close()
-end })
-table.insert(quick_menu.keybindings, { key = 'q', fn = function()
-    quick_menu:close()
-end })
+table.insert(quick_menu.keybindings, {
+    key = "ctrl+y",
+    fn = function()
+        choose_lines(1)
+    end,
+})
+table.insert(quick_menu.keybindings, {
+    key = "ESC",
+    fn = function()
+        quick_menu:close()
+    end,
+})
+table.insert(quick_menu.keybindings, {
+    key = "q",
+    fn = function()
+        quick_menu:close()
+    end,
+})
 function quick_menu:print_header(osd)
-    osd:submenu('quick card creation: line selection'):newline()
-    osd:item('# lines: '):text('Enter 1-9'):newline()
+    osd:submenu("quick card creation: line selection"):newline()
+    osd:item("# lines: "):text("Enter 1-9"):newline()
 end
+
 function quick_menu:print_legend(osd)
     osd:new_layer():size(cfg_mgr.config().menu_font_size):font(cfg_mgr.config().menu_font_name):align(4)
     self:print_header(osd)
     menu:warn_formats(osd)
 end
+
 function quick_menu:make_osd()
     local osd = OSD:new()
     self:print_legend(osd)
@@ -294,21 +307,26 @@ end
 quick_menu_card = Menu:new()
 quick_menu_card.keybindings = {}
 for i = 1, 9 do
-    table.insert(quick_menu_card.keybindings, { key = tostring(i), fn = function()
-        choose_cards(i)
-    end })
+    table.insert(quick_menu_card.keybindings, {
+        key = tostring(i),
+        fn = function()
+            choose_cards(i)
+        end,
+    })
 end
 table.insert(quick_menu_card.keybindings, { key = 'ESC', fn = _ { quick_menu_card.close, quick_menu_card } })
 table.insert(quick_menu_card.keybindings, { key = 'q', fn = _ { quick_menu_card.close, quick_menu_card } })
 function quick_menu_card:print_header(osd)
-    osd:submenu('quick card creation: card selection'):newline()
-    osd:item('# cards: '):text('Enter 1-9'):newline()
+    osd:submenu("quick card creation: card selection"):newline()
+    osd:item("# cards: "):text("Enter 1-9"):newline()
 end
+
 function quick_menu_card:print_legend(osd)
     osd:new_layer():size(cfg_mgr.config().menu_font_size):font(cfg_mgr.config().menu_font_name):align(4)
     self:print_header(osd)
     menu:warn_formats(osd)
 end
+
 function quick_menu_card:make_osd()
     local osd = OSD:new()
     self:print_legend(osd)
@@ -324,7 +342,7 @@ local function run_tests()
         SentKanji = "それは…分からんよ",
         SentAudio = "[sound:s01e13_02m25s010ms_02m27s640ms.ogg]",
         SentEng = "Well...",
-        Image = '<img alt="snapshot" src="s01e13_02m25s561ms.avif">'
+        Image = '<img alt="snapshot" src="s01e13_02m25s561ms.avif">',
     }
     local old_note = {
         SentAudio = "[sound:s01e13_02m21s340ms_02m24s140ms.ogg]",
@@ -385,13 +403,21 @@ local main = (function()
         pcall_tests()
 
         -- Key bindings
-        mp.add_forced_key_binding("Ctrl+c", "mpvacious-copy-sub-to-clipboard", subs_observer.copy_current_primary_to_clipboard)
-        mp.add_key_binding("Ctrl+C", "mpvacious-copy-secondary-sub-to-clipboard", subs_observer.copy_current_secondary_to_clipboard)
+        mp.add_forced_key_binding(
+            "Ctrl+c",
+            "mpvacious-copy-sub-to-clipboard",
+            subs_observer.copy_current_primary_to_clipboard
+        )
+        mp.add_key_binding(
+            "Ctrl+C",
+            "mpvacious-copy-secondary-sub-to-clipboard",
+            subs_observer.copy_current_secondary_to_clipboard
+        )
         mp.add_key_binding("Ctrl+t", "mpvacious-autocopy-toggle", subs_observer.toggle_autocopy)
         mp.add_key_binding("Ctrl+g", "mpvacious-animated-snapshot-toggle", encoder.snapshot.toggle_animation)
 
         -- Secondary subtitles
-        mp.add_key_binding("Ctrl+v", "mpvacious-secondary-sid-toggle", secondary_sid.change_visibility)
+        mp.add_key_binding("Ctrl+V", "mpvacious-secondary-sid-toggle", secondary_sid.change_visibility)
         mp.add_key_binding("Ctrl+k", "mpvacious-secondary-sid-prev", secondary_sid.select_previous)
         mp.add_key_binding("Ctrl+j", "mpvacious-secondary-sid-next", secondary_sid.select_next)
 
@@ -411,15 +437,15 @@ local main = (function()
         mp.add_key_binding("Alt+g", "mpvacious-quick-card-sel-menu-open", _ { quick_menu_card.open, quick_menu_card })
 
         -- Vim-like seeking between subtitle lines
-        mp.add_key_binding("H", "mpvacious-sub-seek-back", _ { play_control.sub_seek, 'backward' })
-        mp.add_key_binding("L", "mpvacious-sub-seek-forward", _ { play_control.sub_seek, 'forward' })
+        mp.add_key_binding("H", "mpvacious-sub-seek-back", _({ play_control.sub_seek, "backward" }))
+        mp.add_key_binding("L", "mpvacious-sub-seek-forward", _({ play_control.sub_seek, "forward" }))
 
-        mp.add_key_binding("Alt+h", "mpvacious-sub-seek-back-pause", _ { play_control.sub_seek, 'backward', true })
-        mp.add_key_binding("Alt+l", "mpvacious-sub-seek-forward-pause", _ { play_control.sub_seek, 'forward', true })
+        mp.add_key_binding("Alt+h", "mpvacious-sub-seek-back-pause", _({ play_control.sub_seek, "backward", true }))
+        mp.add_key_binding("Alt+l", "mpvacious-sub-seek-forward-pause", _({ play_control.sub_seek, "forward", true }))
 
-        mp.add_key_binding("Ctrl+h", "mpvacious-sub-rewind", _ { play_control.sub_rewind })
-        mp.add_key_binding("Ctrl+H", "mpvacious-sub-replay", _ { play_control.play_till_sub_end })
-        mp.add_key_binding("Ctrl+L", "mpvacious-sub-play-up-to-next", _ { play_control.play_till_next_sub_end })
+        mp.add_key_binding("Ctrl+h", "mpvacious-sub-rewind", _({ play_control.sub_rewind }))
+        mp.add_key_binding("Ctrl+H", "mpvacious-sub-replay", _({ play_control.play_till_sub_end }))
+        mp.add_key_binding("Ctrl+L", "mpvacious-sub-play-up-to-next", _({ play_control.play_till_next_sub_end }))
 
         mp.msg.warn("Press 'a' to open the mpvacious menu.")
 

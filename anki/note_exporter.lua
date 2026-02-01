@@ -306,6 +306,11 @@ local function make_exporter()
         local first_field = self.ankiconnect.get_first_field(self.config.model_name)
         local note_fields = construct_note_fields(sub['text'], sub['secondary'], snapshot.filename, audio.filename)
 
+        note_fields["IsSentenceCard"] = "x"
+        if not h.is_empty(note_fields[self.config.sentence_field]) then
+            note_fields["Sentence"] = note_fields[self.config.sentence_field]
+        end
+
         if not h.is_empty(first_field) and h.is_empty(note_fields[first_field]) then
             note_fields[first_field] = "[empty]"
         end
