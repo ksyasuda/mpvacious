@@ -454,7 +454,6 @@ local function update_selected_note(overwrite)
     end
 
     update_notes(selected_note_ids, overwrite)
->>>>>>> 2bbb89a (update script)
 end
 
 ------------------------------------------------------------
@@ -766,8 +765,7 @@ local main = (function()
         mp.add_key_binding("a", "mpvacious-menu-open", _ { menu.open, menu })
 
         -- Add note
-        mp.add_forced_key_binding("Ctrl+N", "mpvacious-export-note", menu:with_update { note_exporter.export_to_anki, false })
-        mp.add_key_binding("Ctrl+N", "mpvacious-export-note", menu:with_update({ export_to_anki, false }))
+        mp.add_forced_key_binding("Ctrl+n", "mpvacious-export-note", menu:with_update { note_exporter.export_to_anki, false })
 
         -- Note updating
         mp.add_key_binding("Ctrl+b", "mpvacious-update-selected-note", menu:with_update { note_exporter.update_selected_note, false })
@@ -776,7 +774,7 @@ local main = (function()
         mp.add_key_binding("Ctrl+M", "mpvacious-overwrite-last-note", menu:with_update { note_exporter.update_last_note, true })
 
         mp.add_key_binding("g", "mpvacious-quick-card-menu-open", _ { quick_menu.open, quick_menu })
-        mp.add_key_binding("Alt+G", "mpvacious-quick-card-sel-menu-open", _ { quick_menu_card.open, quick_menu_card })
+        mp.add_key_binding("Alt+g", "mpvacious-quick-card-sel-menu-open", _ { quick_menu_card.open, quick_menu_card })
 
         -- Vim-like seeking between subtitle lines
         mp.add_key_binding("H", "mpvacious-sub-seek-back", _({ play_control.sub_seek, "backward" }))
